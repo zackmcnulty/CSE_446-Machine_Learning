@@ -14,6 +14,15 @@
 - Wrap-up of Least Square Errors
 - Gradient Descent
 
+
+##### Lecture 4: Regression wrap-up AND Bias-Variance Trade-off
+- Assessing performance of regression model --> determining loss/cost
+- Overfitting
+- Generalization (true) Error
+- error = Bias, Variance, Noise
+- Bias-Variance Trade-off in model complexity
+
+
 ### Homework Topics
 
 ##### HW1 : Review
@@ -22,3 +31,6 @@
 - intro to python
 
 ##### HW2
+- Maximum Likelihood Estimation (MLE)
+- Linear Regression
+- Ridge Regression
