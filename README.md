@@ -14,6 +14,11 @@
 - Wrap-up of Least Square Errors
 - Gradient Descent
 
+##### Lecture 4: Bias Variance Trade off
+
+
+##### Lecture 5: Bias Variance Tradeoff 2 & Regularization
+
 
 ##### Lecture 4: Regression wrap-up AND Bias-Variance Trade-off
 - Assessing performance of regression model --> determining loss/cost
