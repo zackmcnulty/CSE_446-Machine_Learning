@@ -14,11 +14,6 @@
 - Wrap-up of Least Square Errors
 - Gradient Descent
 
-##### Lecture 4: Bias Variance Trade off
-
-
-##### Lecture 5: Bias Variance Tradeoff 2 & Regularization
-
 
 ##### Lecture 4: Regression wrap-up AND Bias-Variance Trade-off
 - Assessing performance of regression model --> determining loss/cost
@@ -27,15 +22,27 @@
 - error = Bias, Variance, Noise
 - Bias-Variance Trade-off in model complexity
 
+##### Lecture 5: Bias Variance Tradeoff 2 & Ridge Regression
+- Regularization: dealing with infinitely many solutions
+- Ridge regression --> adding curvature 
+- Bias, variance, and irreducible error
+
+
+##### Lecture 6: Cross-validation
+- Choosing hyperparameters (i.e. lambda for ridge regression/lasso)
+- Leave One Out validation
+- K-fold cross validation
 
 ### Homework Topics
 
 ##### HW1 : Review
 - Probability review
+- Expectation, variance
 - Linear algebra review
 - intro to python
 
 ##### HW2
 - Maximum Likelihood Estimation (MLE)
+- Bias - Variance trade-off
 - Linear Regression
 - Ridge Regression
