@@ -27,6 +27,12 @@
 - Ridge regression --> adding curvature 
 - Bias, variance, and irreducible error
 
+##### Lecture 6: Cross validation
+- Importance of validation
+- Leave one out validation
+- K-fold validation
+- Choosing hyperparameters
+
 
 ##### Lecture 6: Cross-validation
 - Choosing hyperparameters (i.e. lambda for ridge regression/lasso)
@@ -35,13 +41,13 @@
 
 ### Homework Topics
 
-##### HW1 : Review
+##### HW0 : Review
 - Probability review
 - Expectation, variance
 - Linear algebra review
 - intro to python
 
-##### HW2
+##### HW1
 - Maximum Likelihood Estimation (MLE)
 - Bias - Variance trade-off
 - Linear Regression
