@@ -1,2 +1,3 @@
 textbook.pdf
 *.swp
+.DS_Store
