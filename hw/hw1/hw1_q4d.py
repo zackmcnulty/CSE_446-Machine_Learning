@@ -66,10 +66,11 @@ for m in m_vals:
     # ====================================
 
 
-plt.plot(m_vals, all_biases)
-plt.plot(m_vals, all_errors)
-plt.plot(m_vals, all_variances)
-plt.plot(m_vals, all_total)
-
+plt.plot(m_vals, all_biases, 'ro--')
+plt.plot(m_vals, all_errors, 'bo--')
+plt.plot(m_vals, all_variances, 'ko--')
+plt.plot(m_vals, all_total, 'go--')
+plt.xlabel('m')
+plt.ylabel('Value')
 plt.legend(['average bias-squared', 'average empirical error', 'average variance', 'average error = variance + bias-squared'])
 plt.show()
