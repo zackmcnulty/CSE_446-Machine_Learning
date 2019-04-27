@@ -39,6 +39,9 @@
 - Leave One Out validation
 - K-fold cross validation
 
+##### Lecture 7: LASSO
+- Benefits of L1 Regularization
+
 ### Homework Topics
 
 ##### HW0 : Review
@@ -52,3 +55,4 @@
 - Bias - Variance trade-off
 - Linear Regression
 - Ridge Regression
+- Test error and training error
