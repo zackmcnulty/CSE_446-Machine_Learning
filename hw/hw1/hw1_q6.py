@@ -73,7 +73,7 @@ sigma_squared = 0.1
 lam = 10**(-4) # lambda for ridge regression
 fraction_train = 0.8
 
-p_vals = [500, 1000, 2000, 3000 ]
+p_vals = [500, 1000, 2000, 3000, 4000, 5000, 6000 ]
 all_train_errors = []
 all_validation_errors = []
 #all_test_errors = []
