@@ -33,14 +33,16 @@
 - K-fold validation
 - Choosing hyperparameters
 
-
-##### Lecture 6: Cross-validation
-- Choosing hyperparameters (i.e. lambda for ridge regression/lasso)
-- Leave One Out validation
-- K-fold cross validation
-
 ##### Lecture 7: LASSO
 - Benefits of L1 Regularization
+- Coordinate Descent Algorithm
+- Subgradients
+- Norms and Convexity
+
+##### Lecture 8: Logistic Regression
+- Logistic Regression
+- Classification
+- Introduction to Optimization
 
 ### Homework Topics
 
@@ -56,3 +58,8 @@
 - Linear Regression
 - Ridge Regression
 - Test error and training error
+
+##### HW2
+- Norms and Convexity
+- LASSO regularization - Coordinate Descent
+- Binary Logistic Regression
