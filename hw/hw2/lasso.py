@@ -56,7 +56,7 @@ def min_null_lambda(X, y):
 
 
 
-def lasso_coordinate_descent(X, y, lam, delta = 10e-4):
+def lasso_coordinate_descent(X, y, lam, w_init = None, delta = 10e-4):
     '''
     Runs the coordinate descent algorithm on the LASSO regression problem.
 
@@ -70,7 +70,12 @@ def lasso_coordinate_descent(X, y, lam, delta = 10e-4):
     n = X.shape[0]
     d = X.shape[1]
     prev_w = np.ones((d,1))
-    w = np.zeros((d,))
+    if w_init == None:
+        w = np.zeros((d,))
+    else:
+        w = w_init
+
+
     c = np.zeros((d,))
     #c3 = np.zeros((d,))
 
@@ -114,7 +119,7 @@ def lasso_coordinate_descent(X, y, lam, delta = 10e-4):
  # ===============================================================================
 
  # problem 8a)
-
+'''
 n = 500
 d = 1000
 k = 100
@@ -142,4 +147,31 @@ plt.figure(1)
 plt.semilogx(lam_vals, np.count_nonzero(W, axis=0), 'r-')
 plt.xlabel('Lambda')
 plt.ylabel('Nonzero Coefficients in w')
+plt.show()
+
+# Problem 8b)
+
+# Based on the definition of w_true, only the first k entries in w are truly nonzero. To calculate the
+# FDR rate all we have to do is count the nonzero entries in the other d-k slots as incorrect
+# Here we skip the first column of W as it corresponds to the w found using lambda_max, which generates
+# a w with all zeros. To avoid division by zero, we define FDR = 0 at this point
+FDR = np.append([0], np.count_nonzero(W[k:, 1:], axis=0) / np.count_nonzero(W[:,1], axis=0))
+
+# Based on the definition of w_true only the first k entries in w are truly nonzero.
+TPR = np.count_nonzero(W[:k, :], axis=0) / k
+
+plt.figure(2)
+plt.plot(FDR, TPR)
+plt.xlabel('FDR')
+plt.ylabel('TPR')
+plt.show()
+
+'''
+# ========================================================================================
+# Problem 9)
+
+import pandas as pd
+df_train = pd.read_table("crime-train.txt")
+df_test = pd.read_table("crime-test.txt")
+
 
