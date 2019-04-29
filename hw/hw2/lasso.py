@@ -111,7 +111,7 @@ def lasso_coordinate_descent(X, y, lam, w_init = None, delta = 10e-4):
  # ===============================================================================
 
  # problem 8a)
-'''
+
 n = 500
 d = 1000
 k = 100
@@ -132,7 +132,7 @@ while np.count_nonzero(W[:, -1]) != d:
 
     print("Running using lambda = ", current_lam)
 
-    (w_new, b) = lasso_coordinate_descent(X,y, current_lam, delta)
+    (w_new, b) = lasso_coordinate_descent(X,y, current_lam, delta = delta)
     W = np.concatenate((W, np.expand_dims(w_new, axis = 1)), axis = 1)
 
 plt.figure(1)
@@ -147,7 +147,7 @@ plt.show()
 # FDR rate all we have to do is count the nonzero entries in the other d-k slots as incorrect
 # Here we skip the first column of W as it corresponds to the w found using lambda_max, which generates
 # a w with all zeros. To avoid division by zero, we define FDR = 0 at this point
-FDR = np.append([0], np.count_nonzero(W[k:, 1:], axis=0) / np.count_nonzero(W[:,1], axis=0))
+FDR = np.append([0], np.count_nonzero(W[k:, 1:], axis=0) / np.count_nonzero(W[:,1:], axis=0))
 
 # Based on the definition of w_true only the first k entries in w are truly nonzero.
 TPR = np.count_nonzero(W[:k, :], axis=0) / k
@@ -158,7 +158,7 @@ plt.xlabel('FDR')
 plt.ylabel('TPR')
 plt.show()
 
-'''
+
 # ========================================================================================
 # Problem 9)
 
