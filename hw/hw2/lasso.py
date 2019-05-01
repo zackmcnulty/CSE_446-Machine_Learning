@@ -115,12 +115,11 @@ def lasso_coordinate_descent(X, y, lam, w_init = None, delta = 10e-4):
  # problem 8a)
 
 
-'''
 n = 500
 d = 1000
 k = 100
 variance = 1
-(X, y) = generate_synthetic_data(n, d, k, variance, seed=125)
+(X, y) = generate_synthetic_data(n, d, k, variance, seed=425)
 
 lam_max = min_null_lambda(X, y)
 lam_ratio = 1.5 # ratio to decrease lambda by during each iteration
@@ -162,7 +161,7 @@ plt.xlabel('FDR')
 plt.ylabel('TPR')
 plt.show()
 
-'''
+
 
 # ========================================================================================
 # Problem 9)

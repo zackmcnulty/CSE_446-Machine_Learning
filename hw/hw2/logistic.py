@@ -59,7 +59,8 @@ def error_rate(X, y, w, b):
     # NOTE: if we add the predictions and the labels, each correct prediction will be either -2 or 2 and each
     # incorrect prediction will be zero as all labels/guesses are -1 or 1. Thus the error rate will be:
     #  1 - sum of abs((predictions + labels)) / (2*total)
-    return 1 - np.sum( np.abs(predictions + y) ) / (2*n)
+    error = 1 - np.sum( np.abs(predictions + y) ) / (2*n)
+    return error
 
 
 def gradient_descent(x_init, gradient_function, eta=0.1, delta=10e-4):
@@ -76,7 +77,6 @@ def gradient_descent(x_init, gradient_function, eta=0.1, delta=10e-4):
     while np.max(np.abs(grad)) > delta:
         # perform a step in gradient descent
 
-       # print(np.max(np.abs(grad)))
         x = x - eta * grad
         grad = gradient_function(x)
         all_xs.append(x)
@@ -84,7 +84,7 @@ def gradient_descent(x_init, gradient_function, eta=0.1, delta=10e-4):
     # x is the best variable values; all_xs shows x value at each iteration
     return (x, all_xs)
 
-def SGD(x_init, gradient_function, batch_size, eta=0.1, delta=10e-4):
+def SGD(X, y, x_init, gradient_function, batch_size, eta=0.1, delta=10e-4):
     '''
     Runs STOCHASTIC gradient descent to calculate optimum
     x_init is the initial values to set to the vector being descended on (in this problem w and b)
@@ -98,7 +98,7 @@ def SGD(x_init, gradient_function, batch_size, eta=0.1, delta=10e-4):
     while np.max(np.abs(grad)) > delta:
         # perform a step in gradient descent
 
-        # print(np.max(np.abs(grad)))
+        print(np.max(np.abs(grad)))
         x = x - eta * grad
         grad = gradient_function(x)
         all_xs.append(x)
@@ -157,7 +157,8 @@ plt.figure(2)
 plt.plot([error_rate(X=X_train, y=Y_train, w=x[:-1], b=x[-1]) for x in all_xs_train])
 plt.plot([error_rate(X=X_test, y=Y_test, w=x[:-1], b=x[-1]) for x in all_xs_train]) # use parameters learned from training dataset
 plt.title('Error rate at each iteration')
-plt.ylabel('Error rate (%)')
+plt.ylabel('Error rate')
+plt.ylim([0,1])
 plt.xlabel('Iteration Number')
 plt.legend(['Training', 'Testing'])
 plt.show()
@@ -166,7 +167,12 @@ plt.show()
 
 # Problem 10c)
 
+batch_size = 1
+sgd_grad_function = lambda X_batch, y_batch, x: grad_J()
+(x_best_train, all_xs_train) = SGD(X=X_train, y=Y_train, )
+
 
 
 
 # Problem 10d)
+batch_size = 100
