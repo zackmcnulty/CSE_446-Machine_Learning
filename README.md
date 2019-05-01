@@ -44,6 +44,15 @@
 - Classification
 - Introduction to Optimization
 
+##### Lecture 9: Gradient Descent
+- Gradient Descent
+- Stochastic Gradient Descent
+
+##### Lecture 10: Perceptrons
+- Perceptrons training algorithm
+- Linear separability
+- Kernel Trick: separation by moving to higher dimensional space
+
 ### Homework Topics
 
 ##### HW0 : Review
@@ -63,3 +72,4 @@
 - Norms and Convexity
 - LASSO regularization - Coordinate Descent
 - Binary Logistic Regression
+- Gradient Descent & Stochastic Gradient Descent
