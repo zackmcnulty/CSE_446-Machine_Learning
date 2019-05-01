@@ -48,10 +48,12 @@
 - Gradient Descent
 - Stochastic Gradient Descent
 
-##### Lecture 10: Perceptrons
+##### Lecture 10: Perceptrons & Support Vector Machines
 - Perceptrons training algorithm
 - Linear separability
 - Kernel Trick: separation by moving to higher dimensional space
+- Support Vector Machines (SVM)
+
 
 ### Homework Topics
 
