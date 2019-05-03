@@ -285,8 +285,8 @@ sgd_grad_function = lambda X_batch, y_batch, x: grad_J(X_batch, y_batch, x[:-1],
 # 9di)
 
 plt.figure(5)
-plt.plot([J_function(X=X_train, y=Y_train, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100[20:]])
-plt.plot([J_function(X=X_test, y=Y_test, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100[20:]]) # use parameters learned from training dataset
+plt.plot([J_function(X=X_train, y=Y_train, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100])
+plt.plot([J_function(X=X_test, y=Y_test, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100]) # use parameters learned from training dataset
 plt.title('SGD Function Value at each iteration (batch_size = 100)')
 plt.ylabel('J(w,b)')
 plt.xlabel('Iteration Number')
