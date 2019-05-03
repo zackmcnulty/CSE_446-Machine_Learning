@@ -1,6 +1,9 @@
 '''
 logistic.py
 
+Given a dataset with a binary response variable, this file has code capable of running
+Binary Logistic Regression.
+
 '''
 
 import numpy as np
@@ -11,6 +14,12 @@ from mnist.loader import MNIST
 def grad_J(X, y, w, b, lam):
     '''
     returns a vector that represents the gradient of J at the given points w,b
+
+    X = data matrix with rows as measurements and columns are features (n x d)
+    y = response variable (n x 1)
+    w = weights vector (d x 1)
+    b = bias term (1 x 1)
+    lam = lambda value used for regularization
     '''
 
     n = y.size
@@ -31,8 +40,13 @@ def grad_J(X, y, w, b, lam):
 
 def J_function(X, y, w,b, lam):
     '''
-    Calculates the value of the J(w,b) logistic error function given data matrix X (rows are measurements
-    and columns are features), labels y, weights w, bias b, and lambda value lam.
+    Calculates the value of the J(w,b) the (normalized) logistic error function
+
+    X = data matrix with rows as measurements and columns are features (n x d)
+    y = response variable (n x 1)
+    w = weights vector (d x 1)
+    b = bias term (1 x 1)
+    lam = lambda value used for regularization
     '''
 
     inside = np.multiply(-y, b + np.dot(w.T, X.T))
@@ -43,8 +57,15 @@ def J_function(X, y, w,b, lam):
 
 def error_rate(X, y, w, b):
     '''
-    Given data matrix X (rows are measurements and columns are features), labels y, weights w, and bias b this
-    calculates the misclassification rate.
+    Uses the given weights w and bias b to make a classification sign(wTx + b) for each data
+    measurement x in X (these measurements are stored as rows). Compares these against the true
+    label stored in y to calculate an error rate.
+
+    X = data matrix with rows as measurements and columns are features (n x d)
+    y = response variable (n x 1)
+    w = weights vector (d x 1)
+    b = bias term (1 x 1)
+    lam = lambda value used for regularization
     '''
 
     n = y.size
@@ -63,11 +84,14 @@ def error_rate(X, y, w, b):
 
 def gradient_descent(x_init, gradient_function, eta=0.1, delta=10e-4):
     '''
-    Runs gradient descent to calculate optimum 
-    x_init is the initial values to set to the vector being descended on (in this problem w and b)
-    gradient_function is a function that takes in a vector x and outputs its gradient
-    eta is the learning rate
-    delta is the stopping condition; stop if all entries in gradient less than delta.
+    Runs gradient descent to calculate minimizer x of the function whose gradient
+    is defined by the given gradient_function.
+
+    x_init = [w,b] is the initial values to set to the vector being descended on (in this problem w and b)
+    gradient_function = a function that takes in a vector x and outputs gradient evaluated at that point
+    eta  = the learning rate for gradient descent
+    delta = stopping condition; stop if all entries in gradient change by less than delta in an iteration.
+
     '''
     x = x_init
     all_xs = [x]
@@ -85,12 +109,16 @@ def gradient_descent(x_init, gradient_function, eta=0.1, delta=10e-4):
 
 def SGD(X, y, x_init, gradient_function, batch_size, eta=0.1, iteration_num=100):
     '''
-    Runs STOCHASTIC gradient descent to calculate optimum
-    x_init is the initial values to set to the vector being descended on (in this problem w and b)
-    gradient_function is a function that takes in a vector x and outputs its gradient
-    eta is the learning rate
-    iteration_num is the stopping condition; stop after a total of this many batches have been processed.
+    Runs STOCHASTIC gradient descent to calculate minimizer x of the given function whose
+    gradient is defined by gradient_function.
+
+    x_init = [w,b] is the initial values to set to the vector being descended on (in this problem w and b)
+    gradient_function = a function that takes in a vector x and outputs gradient evaluated at that point
+    batch_size = size of mini-batches used for SGD to approximate gradient across whole dataset
+    eta  = the learning rate for gradient descent
+    iteration_num = number of iterations (updates of x) to perform before returning the current x
     '''
+
     x = x_init
     n = y.size
     all_xs = [x]
@@ -154,7 +182,7 @@ Y_test = labels_test[(labels_test == 2) + (labels_test == 7)]
 Y_test = np.where(Y_test == 7, 1, -1)
 
 # =====================================================================================================================================
-'''
+
 n = X_train.shape[0]
 d = X_train.shape[1] # 28 x 28 = 784
 lam = 0.1
@@ -168,7 +196,7 @@ eta = 0.1 # learning rate
 (x_best_train, all_xs_train) = gradient_descent(x_init, gradient_function_train, eta, delta)
 
 
-# Problem 10b part i)
+# Problem 9b part i)
 
 plt.figure(1)
 plt.plot([J_function(X=X_train, y=Y_train, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_train])
@@ -179,7 +207,7 @@ plt.xlabel('Iteration Number')
 plt.legend(['Training', 'Testing'])
 #plt.show()
 
-# Problem 10b part ii)
+# Problem 9b part ii)
 
 plt.figure(2)
 # skips plotting the error rate at iteration zero with w = 0
@@ -191,12 +219,11 @@ plt.xlabel('Iteration Number')
 plt.legend(['Training', 'Testing'])
 plt.show()
 
-'''
 
 
 # =====================================================================================================================================
 
-# Problem 10c)
+# Problem 9c)
 
 n = X_train.shape[0]
 d = X_train.shape[1] # 28 x 28 = 784
@@ -212,7 +239,7 @@ sgd_grad_function = lambda X_batch, y_batch, x: grad_J(X_batch, y_batch, x[:-1],
 (x_best_sgd, all_xs_sgd) = SGD(X=X_train, y=Y_train, x_init=x_init, gradient_function=sgd_grad_function, \
                                batch_size=batch_size, eta=eta, iteration_num=num_iterations)
 
-# 10ci)
+# 9ci)
 
 plt.figure(3)
 plt.plot([J_function(X=X_train, y=Y_train, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd])
@@ -224,7 +251,7 @@ plt.legend(['Training', 'Testing'])
 #plt.show()
 
 
-# 10cii)
+# 9cii)
 
 plt.figure(4)
 # skips plotting the error rate at iteration zero with w = 0
@@ -237,11 +264,9 @@ plt.legend(['Training', 'Testing'])
 plt.show()
 
 
-
 # =====================================================================================================================================
 
-
-# Problem 10d)
+# Problem 9d)
 n = X_train.shape[0]
 d = X_train.shape[1] # 28 x 28 = 784
 x_init = np.zeros((d+1, 1)) # = [w, b]
@@ -257,11 +282,11 @@ sgd_grad_function = lambda X_batch, y_batch, x: grad_J(X_batch, y_batch, x[:-1],
 (x_best_sgd, all_xs_sgd100) = SGD(X=X_train, y=Y_train, x_init=x_init, gradient_function=sgd_grad_function, \
                                   batch_size=batch_size, eta=eta, iteration_num=num_iterations)
 
-# 10di)
+# 9di)
 
 plt.figure(5)
-plt.plot([J_function(X=X_train, y=Y_train, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100])
-plt.plot([J_function(X=X_test, y=Y_test, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100]) # use parameters learned from training dataset
+plt.plot([J_function(X=X_train, y=Y_train, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100[20:]])
+plt.plot([J_function(X=X_test, y=Y_test, w=x[:-1], b=x[-1], lam=lam) for x in all_xs_sgd100[20:]]) # use parameters learned from training dataset
 plt.title('SGD Function Value at each iteration (batch_size = 100)')
 plt.ylabel('J(w,b)')
 plt.xlabel('Iteration Number')
@@ -269,7 +294,7 @@ plt.legend(['Training', 'Testing'])
 #plt.show()
 
 
-# 10dii)
+# 9dii)
 
 plt.figure(6)
 # skips plotting the error rate at iteration zero with w = 0

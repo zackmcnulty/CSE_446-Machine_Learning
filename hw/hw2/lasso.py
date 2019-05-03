@@ -90,15 +90,11 @@ def lasso_coordinate_descent(X, y, lam, w_init = None, delta = 10e-4):
 
         b = 1/n * np.sum(y - wTXT)
 
-        #Xy_minus_b = np.dot(X.T, y-b)
-
         for k in range(d):
 
             # NOTE: Can use updated w_k values from SAME ROUND OF ITERATION piazza @199
             #       For this reason, we have to recalculate wTXT at every iteration
             c[k] = 2*np.dot(X[:, k], y - (b + np.dot(w.T, X.T) - w[k]*X[:, k]))
-            #temp = 2*(np.dot(X[:, k], w[k]*X[:, k] - np.dot(w.T, X.T)) + Xy_minus_b[k])
-            #print(temp == c[k])
 
             if c[k] < -1*lam:
                 w[k] = (c[k] + lam) / a[k]
@@ -112,14 +108,14 @@ def lasso_coordinate_descent(X, y, lam, w_init = None, delta = 10e-4):
 
  # ===============================================================================
 
- # problem 8a)
+ # problem 7a)
 
 
 n = 500
 d = 1000
 k = 100
 variance = 1
-(X, y) = generate_synthetic_data(n, d, k, variance, seed=425)
+(X, y) = generate_synthetic_data(n, d, k, variance, seed=3490853)
 
 lam_max = min_null_lambda(X, y)
 lam_ratio = 1.5 # ratio to decrease lambda by during each iteration
@@ -142,9 +138,10 @@ plt.figure(1)
 plt.semilogx(lam_vals, np.count_nonzero(W, axis=0), 'r-')
 plt.xlabel('Lambda')
 plt.ylabel('Nonzero Coefficients in w')
+plt.title('7a: Nonzero Coefficients versus Lambda')
 plt.show()
 
-# Problem 8b)
+# Problem 7b)
 
 # Based on the definition of w_true, only the first k entries in w are truly nonzero. To calculate the
 # FDR rate all we have to do is count the nonzero entries in the other d-k slots as incorrect
@@ -157,25 +154,25 @@ TPR = np.count_nonzero(W[:k, :], axis=0) / k
 
 plt.figure(2)
 plt.plot(FDR, TPR)
+plt.title('7b: False Discoveries and True Positives')
 plt.xlabel('FDR')
 plt.ylabel('TPR')
 plt.show()
 
 
-
 # ========================================================================================
-# Problem 9)
+# Problem 8)
+
 
 import pandas as pd
 df_train = pd.read_table("data/crime-train.txt")
 df_test = pd.read_table("data/crime-test.txt")
-#print(df_train.head())
-#print(df_test.head())
 
 y_train = df_train["ViolentCrimesPerPop"].values
 X_train = df_train.drop("ViolentCrimesPerPop", axis=1).values
 y_test = df_test["ViolentCrimesPerPop"].values
 X_test = df_test.drop("ViolentCrimesPerPop", axis=1).values
+
 
 lam_max = min_null_lambda(X_train, y_train)
 lam_ratio = 2 # factor to decrease lambda by after each iteration
@@ -204,12 +201,12 @@ while current_lam >= 0.01:
     prev_w = w
     current_lam /= lam_ratio
 
-
 # Part a: Number non-zero entries vs lambda
 plt.figure(3)
 plt.semilogx(lam_vals, np.count_nonzero(W, axis=0), 'r-')
 plt.xlabel('Lambda')
 plt.ylabel('Nonzero Coefficients in w')
+plt.title('8a: Nonzero coefficients vs Lambda')
 #plt.show()
 
 # Part b: Regularization Paths: agePct12t29, pctWSocSec, pctUrban, agePct65up, householdsize
@@ -234,7 +231,7 @@ plt.semilogx(lam_vals, np.reshape(W[i1, :], (k, )), \
 
 plt.xlabel('Lambda')
 plt.ylabel('Coefficient Value')
-plt.title('Regularization Paths')
+plt.title('8b: Regularization Paths')
 plt.legend(["agePct12t29", "pctWSocSec", "pctUrban", "agePct65up", "householdsize"])
 #plt.show()
 
@@ -244,23 +241,27 @@ y_pred_train = np.dot(W.T, X_train.T) + np.expand_dims(B, axis=1)
 SSE_train = 1/X_train.shape[0] * np.sum(np.square(y_pred_train - y_train), axis=1)
 y_pred_test = np.dot(W.T, X_test.T) + np.expand_dims(B, axis=1)
 SSE_test = 1/X_test.shape[0] * np.sum(np.square(y_pred_test - y_test), axis=1)
-#print(W[0, :])
 
 plt.figure(5)
-plt.semilogx(lam_vals, SSE_train, 'ro-', lam_vals, SSE_test, 'bo-')
+plt.semilogx(lam_vals, SSE_train, lam_vals, SSE_test)
 plt.legend(["Training Error", "Testing Error"])
 plt.xlabel('Lambda')
 plt.ylabel('SSE / n')
+plt.title('8c: Squared Error as a function of Lambda')
 plt.show()
-
 
 # Part d:
 
-(w30, _ ) = lasso_coordinate_descent(X_train, y_train, 30, delta=delta)
+(w30, _ ) = lasso_coordinate_descent(X_train, y_train, lam=30)
 
 var_names = df_train.columns[1:] # skip the first varname corresponding to response variable ViolentCrimesPerPop
-nonzero_coeffs = {var_names[i]:w30[i] for i in range(len(w30)) if not w30[i] == 0}
+nonzero_coeffs = {w30[i]:var_names[i] for i in range(len(w30)) if not w30[i] == 0}
+#nonzero_coeffs = {w30[i]:i for i in range(len(w30)) if not w30[i] == 0}
+max_coeff = max(list(nonzero_coeffs.keys())) 
+min_coeff = min(list(nonzero_coeffs.keys())) 
 print(nonzero_coeffs)
+print("feature with largest coefficient: ", nonzero_coeffs[max_coeff], " , value: ", max_coeff)
+print("feature with smallest coefficient: ", nonzero_coeffs[min_coeff], " , value: ", min_coeff)
 
 
 # Part e:
