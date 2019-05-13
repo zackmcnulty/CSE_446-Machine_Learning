@@ -60,6 +60,14 @@
 - SVM is a quadratic optimization problem
 - K-nearest Neighbors
 
+##### Lecture 12: Kernel Trick, Bootstrap, K-means
+- More in-depth on Kernel trick
+- Commmon kernels
+- Kernelized ridge regression
+- Random Feature Trick
+- Building confidence intervals with Bootstrap
+- K-means (unsupervised learning)
+
 
 
 ### Homework Topics
@@ -82,3 +90,10 @@
 - LASSO regularization - Coordinate Descent
 - Binary Logistic Regression
 - Gradient Descent & Stochastic Gradient Descent
+
+
+##### HW3
+-
+- Kernel Trick and Kernelized ridge regression
+- Multivariate Gaussians
+- K-means
