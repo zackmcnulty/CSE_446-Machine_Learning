@@ -55,6 +55,13 @@
 - Support Vector Machines (SVM)
 
 
+##### Lecture 11: SVM and Nearest Neighbors
+- SVM as an optimization problem
+- SVM is a quadratic optimization problem
+- K-nearest Neighbors
+
+
+
 ### Homework Topics
 
 ##### HW0 : Review
