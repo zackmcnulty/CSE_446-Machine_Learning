@@ -68,6 +68,9 @@
 - Building confidence intervals with Bootstrap
 - K-means (unsupervised learning)
 
+##### Lecture 13: Principal Component Analysis
+- Low-rank approximations
+- Frame PCA as a variance-maximizing optimization problem
 
 
 ### Homework Topics
@@ -93,7 +96,6 @@
 
 
 ##### HW3
--
 - Kernel Trick and Kernelized ridge regression
 - Multivariate Gaussians
 - K-means

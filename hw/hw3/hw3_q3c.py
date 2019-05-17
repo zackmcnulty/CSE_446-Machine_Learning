@@ -12,28 +12,29 @@ import matplotlib.pyplot as plt
 from mnist.loader import MNIST
 
 
-def grad_J(X, y, W):
+def grad_J(X, y, W, lam=0):
     '''
 
     X = data matrix with rows as measurements and columns are features (n x d)
     y = response variable (n x k) in one-hot encoding; each row is a label
     W = weights vector (d x k)
+    lam = L2 regularizer (more specifically frobenius norm)
     '''
-    # NOTE: might need to expand_dim here
-    yhat = np.dot(X, W) 
-    return -2 * np.dot(X.T, y - yhat)
+    yhat = np.dot(X, W)
+    return -1 * np.dot(X.T, y - yhat) + 2 * lam * W
 
-def J_function(X, y, W):
-    '''
 
-    X = data matrix with rows as measurements and columns are features (n x d)
-    y = response variable (n x k) in one-hot encoding; each row is a label
-    W = weights matrix (d x k)
-    '''
-
-    # NOTE: since we are summing over the two norms, we could equivalently just square all
-    # elements and sum over entire matrix
-    return np.sum(np.square(y - np.dot(X,W)))
+#def J_function(X, y, W):
+#    '''
+#
+#    X = data matrix with rows as measurements and columns are features (n x d)
+#    y = response variable (n x k) in one-hot encoding; each row is a label
+#    W = weights matrix (d x k)
+#    '''
+#
+#    # NOTE: since we are summing over the two norms, we could equivalently just square all
+#    # elements and sum over entire matrix
+#    return 0.5 * np.sum(np.square(y - np.dot(X, W)))
 
 def grad_L(X,y, W):
     '''
@@ -48,16 +49,18 @@ def grad_L(X,y, W):
     
     return -1 * np.dot(X.T, y - yhat)
 
-def L_function(X,y,W):
-    '''
 
-    X = data matrix with rows as measurements and columns are features (n x d)
-    y = response variable (n x k) in one-hot encoding; each row is one label
-    W = weights vector (d x k)
-    '''
-    Wyx = np.dot(X, np.dot(W, y.T))
-    summand = np.sum(np.exp(np.dot(W.T, X.T)) , axis=0)
-    return -1 * np.sum(Wyx - np.log(summand))
+#def L_function(X,y,W):
+#    '''
+#
+#    X = data matrix with rows as measurements and columns are features (n x d)
+#    y = response variable (n x k) in one-hot encoding; each row is one label
+#    W = weights vector (d x k)
+#    '''
+#    Wyx = np.dot(X, np.dot(W, y.T))
+#    summand = np.sum(np.exp(np.dot(W.T, X.T)) , axis=0)
+#    return -1 * np.sum(Wyx - np.log(summand))
+
 
 def error_rate(X, labels, W):
     '''
@@ -83,23 +86,24 @@ def gradient_descent(x_init, gradient_function, eta=0.1, delta=1e-4):
 
     '''
     x = x_init
-    all_xs = [x]
     grad = gradient_function(x)
-    while np.max(np.abs(grad)) > delta:
+    it = 0
+    while np.amax(np.abs(grad)) > delta:
         # perform a step in gradient descent
 
+        it += 1
+        print(it)
         x = x - eta * grad
         grad = gradient_function(x)
-        all_xs.append(x)
-    
-    # x is the best variable values; all_xs shows x value at each iteration
-    return (x, all_xs)
+
+    # x is the best variable values
+    return x
 
 
 
 # =====================================================================================================================================
 
-# Load MNIST Data and filter for 2's and 7's
+# Load MNIST Data
 mndata = MNIST('./data')
 X_train, labels_train = map(np.array, mndata.load_training())
 X_test, labels_test = map(np.array, mndata.load_testing())
@@ -115,25 +119,29 @@ for i,digit in enumerate(labels_train):
 # =====================================================================================================================================
 
 # Problem 3c)
-
 n = X_train.shape[0]
 d = X_train.shape[1] # 28 x 28 = 784
 k = 10 # 10 classes, one for each digit
 
+
 # define initial vector and the gradient function
 W_init_L = np.zeros((d, k))
 W_init_J = np.zeros((d, k))
-gradient_function_J = lambda W: grad_J(X_train, Y_train, W)
-gradient_function_L = lambda W: grad_L(X_train, Y_train, W)
+gradient_function_J = lambda W: grad_J(X=X_train, y=Y_train, W=W, lam=lam)
+gradient_function_L = lambda W: grad_L(X=X_train, y=Y_train, W=W)
 delta = 1e-5
-eta = 0.1 # learning rate
+eta = 0.01 # learning rate
+lam = 100000
 
-(J_best_train, J_xs_train) = gradient_descent(W_init_J, gradient_function_J, eta, delta)
-(L_best_train, L_xs_train) = gradient_descent(W_init_L, gradient_function_L, eta, delta)
+J_best_train = gradient_descent(W_init_J, gradient_function_J, eta, delta)
+#L_best_train = gradient_descent(W_init_L, gradient_function_L, eta, delta)
 
 J_training_error_rate = error_rate(X_train, labels_train, J_best_train)
 J_testing_error_rate = error_rate(X_test, labels_test, J_best_train)
 
-L_training_error_rate = error_rate(X_train, labels_train, L_best_train)
-L_testing_error_rate = error_rate(X_test, labels_test, L_best_train)
+print("J train: ", J_training_error_rate)
+print("J test: ", J_testing_error_rate)
+
+#L_training_error_rate = error_rate(X_train, labels_train, L_best_train)
+#L_testing_error_rate = error_rate(X_test, labels_test, L_best_train)
 
