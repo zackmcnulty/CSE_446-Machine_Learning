@@ -20,21 +20,31 @@ def grad_J(X, y, W, lam=0):
     W = weights vector (d x k)
     lam = L2 regularizer (more specifically frobenius norm)
     '''
+
     yhat = np.dot(X, W)
+
     return -1 * np.dot(X.T, y - yhat) + 2 * lam * W
 
+    #temp = y - yhat
+    #n = X.shape[0]
+    #result2 = -1 * sum([np.outer(X[i, :], temp[i, :]) for i in range(n)])
+    #diff = abs(result1 - result2)
+    #print(np.array_equal(result1, result2))
+    #return result2
 
-#def J_function(X, y, W):
-#    '''
-#
-#    X = data matrix with rows as measurements and columns are features (n x d)
-#    y = response variable (n x k) in one-hot encoding; each row is a label
-#    W = weights matrix (d x k)
-#    '''
-#
-#    # NOTE: since we are summing over the two norms, we could equivalently just square all
-#    # elements and sum over entire matrix
-#    return 0.5 * np.sum(np.square(y - np.dot(X, W)))
+
+
+def J_function(X, y, W):
+    '''
+
+    X = data matrix with rows as measurements and columns are features (n x d)
+    y = response variable (n x k) in one-hot encoding; each row is a label
+    W = weights matrix (d x k)
+    '''
+
+    # NOTE: since we are summing over the two norms, we could equivalently just square all
+    # elements and sum over entire matrix
+    return 0.5 * np.sum(np.square(y - np.dot(X, W)))
 
 def grad_L(X,y, W):
     '''
@@ -74,7 +84,7 @@ def error_rate(X, labels, W):
     return np.sum(np.where(predictions != labels, 1, 0)) / len(labels)
 
 
-def gradient_descent(x_init, gradient_function, eta=0.1, delta=1e-4):
+def gradient_descent(x_init, gradient_function, eta=0.1, delta=1e-4, X=None, y=None):
     '''
     Runs gradient descent to calculate minimizer x of the function whose gradient
     is defined by the given gradient_function.
@@ -94,6 +104,8 @@ def gradient_descent(x_init, gradient_function, eta=0.1, delta=1e-4):
         it += 1
         print(it)
         x = x - eta * grad
+
+        print(J_function(X, y, x))
         grad = gradient_function(x)
 
     # x is the best variable values
@@ -114,7 +126,7 @@ X_test = X_test / 255.0
 #convert training labels to one hot
 # i.e. encode an i as [0, 0, ..., 0, 1, 0, ... 0] where only the ith entry is nonzero
 Y_train = np.zeros((X_train.shape[0], 10))
-for i,digit in enumerate(labels_train):
+for i, digit in enumerate(labels_train):
         Y_train[i, digit] = 1
 # =====================================================================================================================================
 
@@ -131,9 +143,9 @@ gradient_function_J = lambda W: grad_J(X=X_train, y=Y_train, W=W, lam=lam)
 gradient_function_L = lambda W: grad_L(X=X_train, y=Y_train, W=W)
 delta = 1e-5
 eta = 0.01 # learning rate
-lam = 100000
+lam = 0
 
-J_best_train = gradient_descent(W_init_J, gradient_function_J, eta, delta)
+J_best_train = gradient_descent(W_init_J, gradient_function_J, eta, delta, X=X_train, y=Y_train)
 #L_best_train = gradient_descent(W_init_L, gradient_function_L, eta, delta)
 
 J_training_error_rate = error_rate(X_train, labels_train, J_best_train)
