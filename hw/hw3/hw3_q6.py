@@ -93,9 +93,10 @@ def k_means(X, k):
 
 # Problem 6a)
 
-#k_means(X_train, 10)
+k_means(X_train, 10)
 
 # Problem 6b)
+'''
 all_train_errors = []
 all_test_errors = []
 k_vals = [2,5,10,20,40,80,160,320,640,1280] 
@@ -114,3 +115,4 @@ plt.plot(k_vals, all_train_errors)
 plt.plot(k_vals, all_test_errors)
 plt.legend(['Train', 'Test'])
 plt.show()
+'''

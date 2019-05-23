@@ -20,6 +20,9 @@ def plot_mvg(mu, Sigma, n):
 
     plt.figure(1)
     plt.plot(X[0, :], X[1, :], '^')
+    plt.xlabel('x coordinate')
+    plt.ylabel('y coordinate')
+    plt.title('Problem 7a')
     plt.show()
     
     return X
@@ -45,7 +48,7 @@ def calc_mean_and_cov(X, n):
     points1 = np.hstack((start, end1))
     points2 = np.hstack((start, end2))
 
-    plt.figure(2)
+    plt.figure(1)
     plt.plot(mu_hat[0], mu_hat[1], 'ro')
     plt.plot(points1[0, :], points1[1, :])
     plt.plot(points2[0, :], points2[1, :])
@@ -55,6 +58,9 @@ def calc_mean_and_cov(X, n):
     plt.xlim(limits)
     plt.ylim(limits)
     plt.legend(['mu', 'Eigenvector 1 (Lambda = ' + str(L[0]) + ' )', 'Eigenvector 2 (Lambda = ' + str(L[1]) + ' )',])
+    plt.xlabel('x coordinate')
+    plt.ylabel('y coordinate')
+    plt.title('Problem 7b')
 
     plt.show()
 
@@ -72,6 +78,9 @@ def part_c(X, mu_hat, L, Q):
     plt.plot(row1, row2, 'ro')
     plt.xlim([-r, r])
     plt.ylim([-r, r])
+    plt.xlabel('x coordinate')
+    plt.ylabel('y coordinate')
+    plt.title('Problem 7c')
     plt.show()
 
 
