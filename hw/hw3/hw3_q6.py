@@ -22,11 +22,6 @@ X_test = X_test / 255.0
 n = X_train.shape[0]
 d = X_train.shape[1] # 28 x 28 = 784
 
-#convert training labels to one hot
-# i.e. encode an i as [0, 0, ..., 0, 1, 0, ... 0] where only the ith entry is nonzero
-Y_train = np.zeros((X_train.shape[0], 10))
-for i,digit in enumerate(labels_train):
-        Y_train[i, digit] = 1
 # =====================================================================================================================================
 
 def objective_function(X, partitions, MU):
@@ -36,22 +31,24 @@ def objective_function(X, partitions, MU):
         MU is a matrix where each row is one of the k means
     '''
     cost = 0
-    for i, part in enumerate(partitions):
-        mu = np.expand_dims(MU[i, :], axis=0)
-        for x in partitions[part]:
-            cost += np.linalg.norm(X[x, :] - mu) ** 2
-        #temp1 = X[partitions[part], :]
-        #temp2 = temp1 - mu
-        #temp3 = np.square(np.linalg.norm(temp2, axis=1))
-        #cost += np.sum(temp3)
+    for part in partitions:
+        mu = np.expand_dims(MU[part, :], axis=0)
+        for j in partitions[part]:
+            temp1 = mu - X[j, :]
+            temp2 = np.linalg.norm(temp1) ** 2
+            cost += temp2
+        #cost += np.sum(np.square(np.linalg.norm(mu - X[partitions[part]], axis=1)))
     return cost
+
 
 def find_partitions(X, MU):
     n = X.shape[0]
     partitions = {}
     for i in range(n):
-        x = X[i, :]
-        part = np.argmin(np.linalg.norm(MU - x, axis=1))
+        x = np.expand_dims(X[i, :], axis=0)
+        temp1 = MU - x
+        temp2 = np.linalg.norm(temp1, axis=1)
+        part = np.argmin(temp2)
         if part in partitions:
             partitions[part].append(i)
         else:
@@ -71,13 +68,15 @@ def k_means(X, k):
 
     prev_MU = np.zeros((k,d))
     delta = 1e-3
-    obj_delta = 10
+    obj_delta = 100
 
     objective_values = []
     itr = 0
 
+    # stop when the MUs stop moving or the objective value stops changing
     while np.amax(np.abs(MU - prev_MU)) > delta and (len(objective_values) < 2 or abs(objective_values[-1] - objective_values[-2]) > obj_delta):
         itr += 1
+        prev_MU = np.copy(MU)
         #print("iteration number: ", itr)
 
         # find partitions
@@ -90,22 +89,24 @@ def k_means(X, k):
 
             # else just leave the current MU as is
 
-        objective_values.append(objective_function(X, partitions, MU))
+    #    objective_values.append(objective_function(X=X, partitions=partitions, MU=MU))
+
     #    print(objective_values[-1])
 
     #plt.figure(1)
     #plt.plot(objective_values)
     #plt.xlabel("iteration number")
     #plt.ylabel("objective value")
+    #plt.title('Problem 6a (k = 10)')
     #plt.show()
 
 
-   # plt.figure(2)
+    #plt.figure(2)
     #for i in range(k):
-   #     plt.subplot(5,2,i+1)
-   #     plt.imshow(np.reshape(MU[i, :], (28, 28)))
+    #    plt.subplot(5,2,i+1)
+    #    plt.imshow(np.reshape(MU[i, :], (28, 28)))
 
-   # plt.show()
+    #plt.show()
 
     return MU, partitions
 
@@ -119,7 +120,7 @@ all_train_errors = []
 all_test_errors = []
 k_vals = [2,5
     ,10,20,40,80,160] #,640,1280]
-for k in k_vals:
+for i, k in enumerate(k_vals):
     print("Running at k = ", k)
     MU_k, partitions_k = k_means(X_train, k)
     train_error = 1/n * objective_function(X_train, partitions=partitions_k, MU=MU_k)
@@ -131,9 +132,9 @@ for k in k_vals:
     all_test_errors.append(test_error)
 
 
-plt.figure(3)
-plt.plot(k_vals, all_train_errors)
-plt.plot(k_vals, all_test_errors)
-plt.legend(['Train', 'Test'])
-plt.show()
+    plt.figure(3)
+    plt.plot(k_vals[:i+1], all_train_errors)
+    plt.plot(k_vals[:i+1], all_test_errors)
+    plt.legend(['Train', 'Test'])
+    plt.show()
 
