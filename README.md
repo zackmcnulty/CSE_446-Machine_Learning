@@ -72,6 +72,16 @@
 - Low-rank approximations
 - Frame PCA as a variance-maximizing optimization problem
 
+##### Lecture 14: Singular Value Decomposition
+- SVD
+- Low-rank approximations
+- Relation to PCA
+
+##### Lecture 15: Mixture Models and Expectation Maximization
+- Unsupervised Learning
+- Probablistic Interpretation of Classification
+
+
 
 ### Homework Topics
 
@@ -99,3 +109,4 @@
 - Kernel Trick and Kernelized ridge regression
 - Multivariate Gaussians
 - K-means
+- Bootstrap
