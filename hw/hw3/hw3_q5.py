@@ -25,20 +25,32 @@ def generate_data(n):
 
 
 def find_K(kernel_function, x, n):
+    '''
+    Finds the kernel matrix K for the specified data (x) and kernel function
+    '''
     return np.fromfunction(lambda i, j: kernel_function(x[i], x[j]), shape=(n,n), dtype=int)
 
 
 def kernel_ridge_regress(x, y, kf, lam, n):
+    '''
+
+    Returns the function f obtained via kernelized ridge regression
+
+    '''
     K = find_K(kernel_function=kf, x=x, n=n)
 
     alpha_hat = np.linalg.solve(K + lam * np.eye(n), y)
 
-    f = lambda z: sum([alpha_hat[i] * kf(z, x[i]) for i in range(n)])
+    f = lambda z: np.sum(np.dot(alpha_hat, kf(z, x)))
     return f
 
 # Part a)
 def error_loo_tunning(x, y, kernel_function, lam_vals, hyperparam_vals, n):
     '''
+
+    Runs Leave One Out cross-validation to calculate the optimal hyperparameters for
+    kernel ridge regression using the specified kernel function.
+
     :param x: input data
     :param y: input labels
     :param kf: kernel function
@@ -84,6 +96,10 @@ def error_loo_tunning(x, y, kernel_function, lam_vals, hyperparam_vals, n):
 
 # Part b)
 def part_b(x,y, kf, lam, hyperparameter, n, kernel_name):
+    '''
+    Plots the original data (x,y) and the function f_hat (determined through kernel ridge regression) evaluated
+    at each point in a fine grid. Also plots the true distribution.
+    '''
     plt.figure()
     f_true = lambda x: 4 * np.sin(np.pi * x) * np.cos(6 * np.pi * x ** 2)
 
@@ -99,6 +115,11 @@ def part_b(x,y, kf, lam, hyperparameter, n, kernel_name):
     plt.show()
 
 def find_fhat(x,y,kf, hyperparameter, lam, n, num_points=1000):
+    '''
+    Returns the values of f_hat evaluated at each point in the fine grid
+    '''
+
+
     f_hat = kernel_ridge_regress(x=x,y=y, lam=lam, kf=lambda x, xprime: kf(x, xprime, hyperparameter), n=n)
 
     x_fine = np.linspace(0,1, num_points)
@@ -106,11 +127,26 @@ def find_fhat(x,y,kf, hyperparameter, lam, n, num_points=1000):
     return x_fine, y_kernel
 
 def part_c(x,y, kf, hyperparameter, lam, n, num_points=1000, B=300):
+    '''
 
+    Run bootstrap to generate an approximate range (5th percentile and 95th percentile) for the predictions of
+    f_hat at each point in the fine grid (between [0,1] with num_points linearly spaced points)
+
+    :param x: input data
+    :param y: input labels
+    :param kf: kernel function
+    :param lam: lambda value to use for kernel ridge regression
+    :param hyperparam: hyperparameter (d or gamma) to use for kernel ridge regression
+    :param n: number data points
+    :param num_points: number of points to use in fine grid to plot f_hat
+    :param B: number of bootstrap samples to use
+    '''
     fhat = np.zeros((B, num_points))
 
     for b in range(B):
+
         print(b)
+
         # sample from the data with replacement
         indices = np.random.choice(list(range(n)), n, replace=True)
         x_b = x[indices]
@@ -138,6 +174,10 @@ def part_c(x,y, kf, hyperparameter, lam, n, num_points=1000, B=300):
 
 def ten_fold_CV(x, y, kernel_function, lam_vals, hyperparam_vals, n):
     '''
+
+    Runs 10-fold cross-validation to estimate the parameters of the given kernel function that
+    minimize the validation error
+
     :param x: input data
     :param y: input labels
     :param kf: kernel function
@@ -180,14 +220,19 @@ def ten_fold_CV(x, y, kernel_function, lam_vals, hyperparam_vals, n):
     lam_ind, h_ind = np.unravel_index(np.argmin(errors, axis=None), errors.shape)
     return (lam_vals[lam_ind], hyperparam_vals[h_ind])
 
-#'''
+# =================================================================================================
+'''
+# parts a,b,c)
+# part a is mostly accomplished by the function error_loo_tuning
+# part b,c are accomplished by the part_b(), part_c() functions repspectively.
+
 # part i) Polynomial Kernel
 n = 30
 x, y = generate_data(n)
 
-lam_vals = [10**k for k in np.linspace(-6, 1, 50)]  # all lambda values of interest
-d_vals = list(range(1, 10, 1))
-kf_p = lambda x, xprime, d: (1 + x * xprime) ** d
+lam_vals = [10**k for k in np.linspace(-6, 1, 25)]  # all lambda values of interest
+d_vals = list(range(1, 20, 1))
+kf_p = lambda x, xprime, d: np.power((1 + x * xprime), d)
 best_lam, best_d = error_loo_tunning(x=x, y=y, kernel_function=kf_p, lam_vals=lam_vals, hyperparam_vals=d_vals, n=n)
 
 print("Polynomial Kernel Function \n")
@@ -200,11 +245,11 @@ part_c(x=x, y=y, kf=kf_p, lam=best_lam, hyperparameter=best_d, n=n, num_points=1
 # part ii) RBF Kernel
 
 gamma_ballpark = 1 / np.median([(x[i] - x[j]) ** 2 for i in range(n) for j in range(n)])
-print(gamma_ballpark)
+print('gamma ballpark: ', gamma_ballpark) # find a ballpark estimate for gamma.
 
 # use lambda values from above
-gamma_vals = np.linspace(1, 25, 50)
-kf_rbf = lambda x, xprime, gamma: np.exp(-gamma * (x - xprime)**2)
+gamma_vals = np.linspace(1, 25, 20)
+kf_rbf = lambda x, xprime, gamma: np.exp(-gamma * np.power(x - xprime, 2))
 best_lam, best_gamma = error_loo_tunning(x=x, y=y, kernel_function=kf_rbf, lam_vals=lam_vals, hyperparam_vals=gamma_vals, n=n)
 
 print("\n\nRBF Kernel Function \n")
@@ -212,25 +257,24 @@ print("best lambda: ", best_lam, " best gamma: ", best_gamma)
 
 part_b(x=x, y=y, kf=kf_rbf, lam=best_lam, hyperparameter=best_gamma, n=n, kernel_name='RBF')
 part_c(x=x, y=y, kf=kf_rbf, hyperparameter=best_gamma, lam=best_lam, n=n, num_points=1000, B=300)
-#'''
 
 
 
 # =========================================================================================
 # part d)
 
-
+'''
 # Polynomial Kernel
 n = 300
 x, y = generate_data(n)
 
-lam_vals = [10**k for k in np.linspace(-6, 1, 50)]  # all lambda values of interest
-d_vals = list(range(1, 15, 1))
-kf_p = lambda x, xprime, d: (1 + x * xprime) ** d
+lam_vals = [10**k for k in np.linspace(-6, 1, 20)]  # all lambda values of interest
+d_vals = list(range(1, 20, 1))
+kf_p = lambda x, xprime, d: np.power((1 + x * xprime), d)
 
 best_lam_poly, best_d = ten_fold_CV(x=x, y=y, kernel_function=kf_p, lam_vals=lam_vals, hyperparam_vals=d_vals, n=n)
 print("Polynomial Kernel Function \n")
-print("best lambda: ", best_lam, " best d: ", best_d)
+print("best lambda: ", best_lam_poly, " best d: ", best_d)
 
 part_b(x=x, y=y, kf=kf_p, lam=best_lam_poly, hyperparameter=best_d, n=n, kernel_name='poly')
 part_c(x=x, y=y, kf=kf_p, lam=best_lam_poly, hyperparameter=best_d, n=n, num_points=1000, B=300)
@@ -239,26 +283,31 @@ part_c(x=x, y=y, kf=kf_p, lam=best_lam_poly, hyperparameter=best_d, n=n, num_poi
 
 # RBF Kernel
 # use lambda values from above
-gamma_vals = np.linspace(1, 25, 50)
-kf_rbf = lambda x, xprime, gamma: np.exp(-gamma * (x - xprime)**2)
+gamma_vals = np.linspace(1, 25, 20)
+kf_rbf = lambda x, xprime, gamma: np.exp(-gamma * np.power(x - xprime, 2))
 
 best_lam_rbf, best_gamma = ten_fold_CV(x=x, y=y, kernel_function=kf_rbf, lam_vals=lam_vals, hyperparam_vals=gamma_vals, n=n)
 print("\n\nRBF Kernel Function \n")
-print("best lambda: ", best_lam, " best gamma: ", best_gamma)
+print("best lambda: ", best_lam_rbf, " best gamma: ", best_gamma)
 part_b(x=x, y=y, kf=kf_rbf, lam=best_lam_rbf, hyperparameter=best_gamma, n=n, kernel_name='RBF')
 part_c(x=x, y=y, kf=kf_rbf, hyperparameter=best_gamma, lam=best_lam_rbf, n=n, num_points=1000, B=300)
 
 
 
-
+#best_lam_poly = 1e-6
+#best_lam_rbf = 1.274e-5
+#best_d = 9
+#best_gamma = 21.21
+#kf_rbf = lambda x, xprime, gamma: np.exp(-gamma * np.power(x - xprime, 2))
+#kf_p = lambda x, xprime, d: np.power((1 + x * xprime), d)
 
 # ===========================================
 # part e)
 m = 1000
 xm, ym = generate_data(m)
 
-f_hat_poly = kernel_ridge_regress(x=xm,y=ym, lam=best_lam_poly, kf=lambda x, xprime: kf_p(x, xprime, best_d), n=n)
-f_hat_rbf = kernel_ridge_regress(x=xm,y=ym, lam=best_lam_rbf, kf=lambda x, xprime: kf_rbf(x, xprime, best_gamma), n=n)
+f_hat_poly = kernel_ridge_regress(x=x,y=y, lam=best_lam_poly, kf=lambda x, xprime: kf_p(x, xprime, best_d), n=n)
+f_hat_rbf = kernel_ridge_regress(x=x,y=y, lam=best_lam_rbf, kf=lambda x, xprime: kf_rbf(x, xprime, best_gamma), n=n)
 
 B = 300
 
@@ -279,6 +328,3 @@ percentile_5 = np.percentile(bootstrap_values, q=5)
 print('95th percentile: ', str(percentile_95))
 print('5th Percentile: ', str(percentile_5))
 
-
-# Using this confidence interval, is there statistically signicant evidence to suggest that one of f_rbf and f_poly
-# is better than the other at predicting Y from X? (Hint: does the confidence interval contain 0?)
