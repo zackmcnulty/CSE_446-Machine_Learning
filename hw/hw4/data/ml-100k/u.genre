@@ -1,20 +1,3 @@
-unknown|0
-Action|1
-Adventure|2
-Animation|3
-Children's|4
-Comedy|5
-Crime|6
-Documentary|7
-Drama|8
-Fantasy|9
-Film-Noir|10
-Horror|11
-Musical|12
-Mystery|13
-Romance|14
-Sci-Fi|15
-Thriller|16
-War|17
-Western|18
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:9757e0d3e6b298159a80dd48eaf938114690e911e39af97a76949ef1663610bb
+size 202

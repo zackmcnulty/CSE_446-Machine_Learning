@@ -1,21 +1,3 @@
-administrator
-artist
-doctor
-educator
-engineer
-entertainment
-executive
-healthcare
-homemaker
-lawyer
-librarian
-marketing
-none
-other
-programmer
-retired
-salesman
-scientist
-student
-technician
-writer
+version https://git-lfs.github.com/spec/v1
+oid sha256:cd5fbec9afe345d993a62fc7817df1a4a9079c4feb267b3118763b8fd942137d
+size 193
