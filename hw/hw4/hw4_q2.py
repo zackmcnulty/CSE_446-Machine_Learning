@@ -35,9 +35,9 @@ def find_error(X, R_hat):
     '''
 
     :param X: data matrix in sparse representation: rows are in form (user_index, movie_index, rating)
-    :param R_hat: predicted movie preferences; this is a function that takes in (i,j), the user
+    :param R_hat: predicted movie preferences; this is a function that takes in (j, i), the user
                   index and the movie index, and outputs a number in [1, 5]
-    :return: testing error
+    :return: MSE on the given data set
     '''
 
     n = X.shape[0]
@@ -51,7 +51,7 @@ def find_error(X, R_hat):
 
 
 # Problem 2a =============================================================================
-
+'''
 mu = np.zeros(shape=(num_items, ))
 
 # counts the number of ratings for each movie
@@ -190,7 +190,7 @@ plt.ylabel('Error')
 plt.legend(['Training Error', 'Testing Error'])
 plt.show()
 
-
+'''
 
 
 
@@ -207,12 +207,187 @@ plt.show()
 # Problem 2d =============================================================================
 
 
+# choose hyperparameters
+lam = 1  # lambda; used for regularization
+sigma = 0.1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
+delta = 0.1  # convergence condition
+
+
+d_vals = [1, 2, 5, 10]#, 20, 50]
+all_train_errors = []
+all_test_errors = []
+
+# Rather than searching through all of train to find appropriate indices every time, we will just do
+# it initially. Row indices in train that correspond to each respective i, j
+index_map_i = {i : np.where(train[:, 1] == i)[0] for i in range(num_items)}
+index_map_j = {j : np.where(train[:, 0] == j)[0] for j in range(num_users)}
+
+for d in d_vals:
+
+    # Initialize {u_i}, {v_i}. Let U, V be matrices whose rows are u_i, v_i respectively
+    U = sigma * np.random.randn(num_items, d)
+    V = sigma * np.random.randn(num_users, d)
+
+    prev_U = np.copy(U)
+    prev_V = np.copy(V)
+
+    not_converged = True
+    itr = 0
+
+    print('Running d value : ', d)
+    while not_converged:
+        itr += 1
+        print('iteration: ', itr)
+
+        # Fix {u_i} and solve for {v_i}
+        for j in range(num_users):
+            indices = index_map_j[j]
+            U_j = U[train[indices, 1], :]  # only take u_i who have a corresponding (j, i, R_ij) datapoint with current j
+            A = lam * np.eye(d) + np.dot(U_j.T, U_j)
+            b = np.dot(U_j.T, train[indices, 2])
+            V[j, :] = np.linalg.solve(A, b)
+
+        # Fix {v_j} and solve for {u_i}
+        for i in range(num_items):
+            indices = index_map_i[i] #  j values in (j, i, R_ij) with current i
+            V_i = V[train[indices, 0], :]  # only take the v_j who have a corresponding (j, i, R_ij) datapoint with current i
+            A = lam * np.eye(d) + np.dot(V_i.T, V_i)
+            b = np.dot(V_i.T, train[indices, 2])
+            U[i, :] = np.linalg.solve(A, b)
+
+        # check convergence
+        #max_diff = max(np.max(np.abs(U - prev_U)),  np.max(np.abs(V - prev_V)))
+        #print(max_diff, np.max(V), np.max(U))
+        if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
+            not_converged = False
+        else:
+            prev_U = np.copy(U)
+            prev_V = np.copy(V)
+
+    R_hat = lambda user_index, movie_index: np.inner(U[movie_index, :], V[user_index, :])
+
+    all_train_errors.append(find_error(train, R_hat))
+    all_test_errors.append(find_error(test, R_hat))
 
 
 
 
 
 
+plt.figure(2)
+plt.plot(d_vals, all_train_errors)
+plt.plot(d_vals, all_test_errors)
+plt.title('Problem 2d: MSE using Alternating Minimization  ')
+plt.xlabel('Rank used for Approximation (d)')
+plt.ylabel('Mean Squared Error')
+plt.legend(['Training Error', 'Testing Error'])
 
+plt.show()
+
+# Problem 2e =============================================================================
+
+
+# choose hyperparameters
+lam = 1  # lambda; used for regularization
+sigma = 0.1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
+delta = 0.1  # convergence condition
+batch_size = 10  # minibatch size to use in stochastic gradient descent
+eta = 1  # learning rate for stochastic gradient descent
+
+
+d_vals = [1, 2, 5, 10]#, 20, 50]
+all_train_errors = []
+all_test_errors = []
+
+# Rather than searching through all of train to find appropriate indices every time, we will just do
+# it initially. Row indices in train that correspond to each respective i, j
+index_map_i = {i : np.where(train[:, 1] == i)[0] for i in range(num_items)}
+index_map_j = {j : np.where(train[:, 0] == j)[0] for j in range(num_users)}
+
+for d in d_vals:
+
+    # Initialize {u_i}, {v_i}. Let U, V be matrices whose rows are u_i, v_i respectively
+    U = sigma * np.random.randn(num_items, d)
+    V = sigma * np.random.randn(num_users, d)
+
+    prev_U = np.copy(U)
+    prev_V = np.copy(V)
+
+    not_converged = True
+    itr = 0
+
+    print('Running d value : ', d)
+    while not_converged:
+        itr += 1
+        print('iteration: ', itr)
+
+        shuffled_indices = list(range(train.shape[0]))
+        np.random.shuffle(shuffled_indices)
+
+        # LOOP OVER ALL MINIBATCHES
+        for batch_num in range(train.shape[0] // batch_size):
+
+            data_indices = shuffled_indices[batch_num * batch_size : (batch_num + 1) * batch_size]
+            batch = train[data_indices, :]
+
+            index_map_i = {i : np.where(batch[:, 1] == i)[0] for i in range(num_items)}
+            index_map_j = {j : np.where(batch[:, 0] == j)[0] for j in range(num_users)}
+
+
+            grad_U = np.zeros(U.shape)
+            grad_V = np.zeros(V.shape)
+
+            for j in range(num_users):
+                if j in index_map_j:
+                    indices = index_map_j[j]
+                    U_j = U[train[indices, 1], :]  # only take u_i who have a corresponding (j, i, R_ij) datapoint with current j
+                    A = lam * np.eye(d) + np.dot(U_j.T, U_j)
+                    b = np.dot(U_j.T, train[indices, 2])
+                    grad_V[j, :] = 2*A - 2*b
+
+
+            # Fix {v_j} and solve for {u_i}
+            for i in range(num_items):
+                if i in index_map_i:
+                    indices = index_map_i[i] #  j values in (j, i, R_ij) with current i
+                    V_i = V[train[indices, 0], :]  # only take the v_j who have a corresponding (j, i, R_ij) datapoint with current i
+                    A = lam * np.eye(d) + np.dot(V_i.T, V_i)
+                    b = np.dot(V_i.T, train[indices, 2])
+                    grad_U[i, :] = 2*A - 2*b
+
+            U = U - eta * grad_U
+            V = V - eta * grad_V
+
+
+            # check convergence
+            #max_diff = max(np.max(np.abs(U - prev_U)),  np.max(np.abs(V - prev_V)))
+            #print(max_diff, np.max(V), np.max(U))
+            if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
+                not_converged = False
+            else:
+                prev_U = np.copy(U)
+                prev_V = np.copy(V)
+
+
+
+    R_hat = lambda user_index, movie_index: np.inner(U[movie_index, :], V[user_index, :])
+
+    all_train_errors.append(find_error(train, R_hat))
+    all_test_errors.append(find_error(test, R_hat))
+
+
+
+
+
+
+plt.figure(2)
+plt.plot(d_vals, all_train_errors)
+plt.plot(d_vals, all_test_errors)
+plt.title('Problem 2d: MSE using Alternating Minimization  ')
+plt.xlabel('Rank used for Approximation (d)')
+plt.ylabel('Mean Squared Error')
+plt.legend(['Training Error', 'Testing Error'])
+
+plt.show()
 
 # Problem 2e =============================================================================
