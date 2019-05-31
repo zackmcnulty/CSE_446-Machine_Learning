@@ -58,6 +58,7 @@ def find_error(X, R_hat):
 
 
 # Problem 2a =============================================================================
+'''
 mu = np.zeros(shape=(num_items, ))
 
 # counts the number of ratings for each movie
@@ -78,7 +79,7 @@ R_hat = lambda user_index, movie_index: mu[movie_index]
 print('Test Error Part a: ', find_error(test, R_hat))
 
 
-
+'''
 
 
 
@@ -87,7 +88,7 @@ print('Test Error Part a: ', find_error(test, R_hat))
 
 
 # Problem 2b =============================================================================
-
+'''
 matrix = np.zeros(shape=(num_items, num_users))
 for entry in range(train.shape[0]):
     next_user = train[entry, 0]
@@ -102,13 +103,6 @@ all_train_errors = []
 all_test_errors = []
 
 for d in d_vals:
-
-    # Calculate full matrix beforehand
-    #R_lowrank = np.dot(u[:, :d] * s[:d], vh[:d, : ])
-    #Rd_hat = lambda user_index, movie_index: R_lowrank[movie_index, user_index]
-
-    # Consider R_ij as an inner product
-    #Rd_hat2 = lambda user_index, movie_index: sum([u[movie_index, i]*s[i]*vh[i, user_index] for i in range(d)])
 
     # First, note that the lowrank (rank d) approximation can be acheived through the matrix
     # multiplication U[:, :d] * S[:d, :d] * Vh[:d, :] = U_d S_d Vh_d.
@@ -153,8 +147,11 @@ for entry in range(train.shape[0]):
 
 # Replace missing entries with the average rating from other users.
 # mu is calculated in part a) above (MOVE THIS DOWN HERE?)
-for j in range(matrix.shape[1]):
-    matrix[:, j] = np.where(matrix[:, j] == -1, mu, matrix[:, j])
+#for j in range(matrix.shape[1]):
+#    matrix[:, j] = np.where(matrix[:, j] == -1, mu, matrix[:, j])
+
+# SEE PIAZZA @557
+matrix = np.where(matrix == -1, np.mean(train[:, 2]), matrix)
 
 
 [u, s, vh] = np.linalg.svd(matrix, full_matrices=False)
@@ -194,9 +191,8 @@ plt.ylabel('Error')
 plt.legend(['Training Error', 'Testing Error'])
 plt.show()
 
+
 '''
-
-
 
 
 
@@ -210,13 +206,15 @@ plt.show()
 
 # Problem 2d =============================================================================
 
+'''
+
 # choose hyperparameters
-lam = 1  # lambda; used for regularization
-sigma = 0.1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
+lam = 10 # lambda; used for regularization
+sigma = 5  # standard deviation for normal distributions used for initializing {u_i}, {v_j}
 delta = 0.1  # convergence condition
 
 
-d_vals = [1, 2, 5, 10]#, 20, 50]
+d_vals = [1, 2, 5, 10, 20, 50]
 all_train_errors = []
 all_test_errors = []
 
@@ -286,6 +284,8 @@ plt.ylabel('Mean Squared Error')
 plt.legend(['Training Error', 'Testing Error'])
 
 plt.show()
+'''
+
 
 
 # Problem 2e =============================================================================
@@ -323,7 +323,7 @@ def sgd(U,V, batch, batch_size):
 
 
 # choose hyperparameters
-lam = 1  # lambda; used for regularization
+lam = 0.001  # lambda; used for regularization
 sigma = 0.1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
 delta = 0.001  # convergence condition
 batch_size = 100  # minibatch size to use in stochastic gradient descent
@@ -361,11 +361,9 @@ for d in d_vals:
             data_indices = shuffled_indices[batch_num * batch_size : (batch_num + 1) * batch_size]
             batch = train[data_indices, :]
 
-            U,V = sgd(U=U,V=V,batch=batch, batch_size=batch_size)
+            U, V = sgd(U=U, V=V, batch=batch, batch_size=batch_size)
 
             # check convergence
-            #max_diff = max(np.max(np.abs(U - prev_U)),  np.max(np.abs(V - prev_V)))
-            #print(max_diff, np.max(V), np.max(U))
             if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
                 not_converged = False
                 break
@@ -400,11 +398,13 @@ for d in d_vals:
 plt.figure(2)
 plt.plot(d_vals, all_train_errors)
 plt.plot(d_vals, all_test_errors)
-plt.title('Problem 2d: MSE using Alternating Minimization  ')
+plt.title('Problem 2e: MSE using SGD  ')
 plt.xlabel('Rank used for Approximation (d)')
 plt.ylabel('Mean Squared Error')
 plt.legend(['Training Error', 'Testing Error'])
 
 plt.show()
-# Problem 2e =============================================================================
-'''
+
+
+# Problem 2f =============================================================================
+
