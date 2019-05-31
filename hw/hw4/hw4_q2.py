@@ -9,6 +9,7 @@ Building a movie recommendation system.
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+import inspect
 
 # LOAD DATA ===========================================================================
 data = []
@@ -31,6 +32,12 @@ test = data[perm[num_train::],:]
 
 # COMMON FUNCTIONS =====================================================================
 
+# Thanks to the random piazza person
+def p(x):
+    frame = inspect.stack()[1]
+    exp = frame.code_context[0].strip()[2:-1]
+    print(f"{exp}: {x}")
+
 def find_error(X, R_hat):
     '''
 
@@ -51,7 +58,6 @@ def find_error(X, R_hat):
 
 
 # Problem 2a =============================================================================
-'''
 mu = np.zeros(shape=(num_items, ))
 
 # counts the number of ratings for each movie
@@ -136,9 +142,7 @@ plt.show()
 
 
 
-
 # Problem 2c =============================================================================
-
 
 matrix = np.zeros(shape=(num_items, num_users)) - 1 # negative entries will be our sign that no ratings are present
 for entry in range(train.shape[0]):
@@ -205,7 +209,6 @@ plt.show()
 
 
 # Problem 2d =============================================================================
-
 
 # choose hyperparameters
 lam = 1  # lambda; used for regularization
@@ -284,14 +287,46 @@ plt.legend(['Training Error', 'Testing Error'])
 
 plt.show()
 
+
 # Problem 2e =============================================================================
+
+def sgd(U,V, batch, batch_size):
+
+            index_map_i = {i : np.where(batch[:, 1] == i)[0] for i in range(num_items)}
+            index_map_j = {j : np.where(batch[:, 0] == j)[0] for j in range(num_users)}
+
+            grad_U = np.zeros(U.shape)
+            grad_V = np.zeros(V.shape)
+
+            for j in range(num_users):
+                if j in index_map_j:
+                    indices = index_map_j[j]
+                    U_j = U[train[indices, 1], :]  # only take u_i who have a corresponding (j, i, R_ij) datapoint with current j
+                    A = lam * np.eye(d) + np.dot(U_j.T, U_j)
+                    b = np.dot(U_j.T, train[indices, 2])
+                    grad_V[j, :] = batch_size / train.shape[0] * (2*np.dot(A, V[j, :]) - 2*b )
+
+
+            # Fix {v_j} and solve for {u_i}
+            for i in range(num_items):
+                if i in index_map_i:
+                    indices = index_map_i[i] #  j values in (j, i, R_ij) with current i
+                    V_i = V[train[indices, 0], :]  # only take the v_j who have a corresponding (j, i, R_ij) datapoint with current i
+                    A = lam * np.eye(d) + np.dot(V_i.T, V_i)
+                    b = np.dot(V_i.T, train[indices, 2])
+                    grad_U[i, :] = batch_size / train.shape[0] * (2*np.dot(A, U[i, :]) - 2*b)
+
+            U = U - eta * grad_U
+            V = V - eta * grad_V
+            return U, V
+
 
 
 # choose hyperparameters
 lam = 1  # lambda; used for regularization
 sigma = 0.1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
-delta = 0.1  # convergence condition
-batch_size = 10  # minibatch size to use in stochastic gradient descent
+delta = 0.001  # convergence condition
+batch_size = 100  # minibatch size to use in stochastic gradient descent
 eta = 1  # learning rate for stochastic gradient descent
 
 
@@ -299,10 +334,6 @@ d_vals = [1, 2, 5, 10]#, 20, 50]
 all_train_errors = []
 all_test_errors = []
 
-# Rather than searching through all of train to find appropriate indices every time, we will just do
-# it initially. Row indices in train that correspond to each respective i, j
-index_map_i = {i : np.where(train[:, 1] == i)[0] for i in range(num_items)}
-index_map_j = {j : np.where(train[:, 0] == j)[0] for j in range(num_users)}
 
 for d in d_vals:
 
@@ -330,40 +361,26 @@ for d in d_vals:
             data_indices = shuffled_indices[batch_num * batch_size : (batch_num + 1) * batch_size]
             batch = train[data_indices, :]
 
-            index_map_i = {i : np.where(batch[:, 1] == i)[0] for i in range(num_items)}
-            index_map_j = {j : np.where(batch[:, 0] == j)[0] for j in range(num_users)}
-
-
-            grad_U = np.zeros(U.shape)
-            grad_V = np.zeros(V.shape)
-
-            for j in range(num_users):
-                if j in index_map_j:
-                    indices = index_map_j[j]
-                    U_j = U[train[indices, 1], :]  # only take u_i who have a corresponding (j, i, R_ij) datapoint with current j
-                    A = lam * np.eye(d) + np.dot(U_j.T, U_j)
-                    b = np.dot(U_j.T, train[indices, 2])
-                    grad_V[j, :] = 2*A - 2*b
-
-
-            # Fix {v_j} and solve for {u_i}
-            for i in range(num_items):
-                if i in index_map_i:
-                    indices = index_map_i[i] #  j values in (j, i, R_ij) with current i
-                    V_i = V[train[indices, 0], :]  # only take the v_j who have a corresponding (j, i, R_ij) datapoint with current i
-                    A = lam * np.eye(d) + np.dot(V_i.T, V_i)
-                    b = np.dot(V_i.T, train[indices, 2])
-                    grad_U[i, :] = 2*A - 2*b
-
-            U = U - eta * grad_U
-            V = V - eta * grad_V
-
+            U,V = sgd(U=U,V=V,batch=batch, batch_size=batch_size)
 
             # check convergence
             #max_diff = max(np.max(np.abs(U - prev_U)),  np.max(np.abs(V - prev_V)))
             #print(max_diff, np.max(V), np.max(U))
             if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
                 not_converged = False
+                break
+            else:
+                prev_U = np.copy(U)
+                prev_V = np.copy(V)
+        else:
+            # run the remaining samples in the training set
+            batch = train[shuffled_indices[train.shape[0] // n : ]]
+            U,V = sgd(U=U,V=V,batch=batch, batch_size=batch.shape[0])
+
+            # check convergence
+            if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
+                not_converged = False
+                break
             else:
                 prev_U = np.copy(U)
                 prev_V = np.copy(V)
@@ -389,5 +406,5 @@ plt.ylabel('Mean Squared Error')
 plt.legend(['Training Error', 'Testing Error'])
 
 plt.show()
-
 # Problem 2e =============================================================================
+'''
