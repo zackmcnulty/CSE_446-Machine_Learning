@@ -282,7 +282,7 @@ import torch.optim as optim
 
 # choose hyperparameters
 lam = 0.001  # lambda; used for regularization
-sigma = 5 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
+sigma = 1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
 delta = 0.05  # convergence condition
 batch_size = 500  # minibatch size to use in stochastic gradient descent
 eta = 2e-3 # learning rate for stochastic gradient descent
@@ -290,12 +290,12 @@ eta = 2e-3 # learning rate for stochastic gradient descent
 device = torch.device('cpu')
 
 d_vals = [1,2, 5, 10, 20, 50]
-d_vals = [1,2,5,10]
+#d_vals = [1,2,5,10]
 N = train.shape[0]
 all_train_errors = []
 all_test_errors = []
 
-#torch.random.manual_seed(12345)
+torch.random.manual_seed(14564678) # 1546345
 
 def loss_function(U,V, batch, lam):
     loss = torch.tensor([[0]], dtype=torch.float)
