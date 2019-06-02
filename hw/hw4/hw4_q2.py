@@ -27,8 +27,8 @@ num_items = max(data[:,1])+1 # num_items = 1682 indexed 0,...,1681
 np.random.seed(1)
 num_train = int(0.8*n)
 perm = np.random.permutation(data.shape[0])
-train = data[perm[0:num_train],:]
-test = data[perm[num_train::],:]
+train = data[perm[0:num_train], :]
+test = data[perm[num_train::], :]
 
 # COMMON FUNCTIONS =====================================================================
 
@@ -69,10 +69,9 @@ for i in range(train.shape[0]):
     mu[next_movie] += next_rating
     counts[next_movie] += 1
 
-
-# TODO: Temporary fix( check piazza @538 for answer)
+# this will ensure that mu is set equal to zero when no ratings are available
+# for a specific movie
 counts = np.where(counts == 0, 1, counts)
-
 mu = mu / counts
 
 R_hat = lambda user_index, movie_index: mu[movie_index]
@@ -98,7 +97,7 @@ for entry in range(train.shape[0]):
 
 [u, s, vh] = np.linalg.svd(matrix, full_matrices=False)
 
-d_vals = [1,2,5,10,20,50]
+d_vals = [1, 2, 5, 10, 20, 50]
 all_train_errors = []
 all_test_errors = []
 
@@ -145,14 +144,10 @@ for entry in range(train.shape[0]):
     next_rating = train[entry, 2]
     matrix[next_movie, next_user] = next_rating
 
-# Replace missing entries with the average rating from other users.
-# mu is calculated in part a) above (MOVE THIS DOWN HERE?)
-#for j in range(matrix.shape[1]):
-#    matrix[:, j] = np.where(matrix[:, j] == -1, mu, matrix[:, j])
 
-# SEE PIAZZA @557
-matrix = np.where(matrix == -1, np.mean(train[:, 2]), matrix)
-
+# Replace unknown entries with the mean rating
+mean_rating = np.mean(train[:, 2])
+matrix = np.where(matrix == -1, mean_rating, matrix)
 
 [u, s, vh] = np.linalg.svd(matrix, full_matrices=False)
 
@@ -161,13 +156,6 @@ all_train_errors = []
 all_test_errors = []
 
 for d in d_vals:
-
-    # Calculate full matrix beforehand
-    #R_lowrank = np.dot(u[:, :d] * s[:d], vh[:d, : ])
-    #Rd_hat = lambda user_index, movie_index: R_lowrank[movie_index, user_index]
-
-    # Consider R_ij as an inner product
-    #Rd_hat2 = lambda user_index, movie_index: sum([u[movie_index, i]*s[i]*vh[i, user_index] for i in range(d)])
 
     # First, note that the lowrank (rank d) approximation can be acheived through the matrix
     # multiplication U[:, :d] * S[:d, :d] * Vh[:d, :] = U_d S_d Vh_d.
@@ -192,7 +180,7 @@ plt.legend(['Training Error', 'Testing Error'])
 plt.show()
 
 
-'''
+#'''
 
 
 
@@ -284,65 +272,51 @@ plt.ylabel('Mean Squared Error')
 plt.legend(['Training Error', 'Testing Error'])
 
 plt.show()
-'''
 
+#'''
 
+# Problem 2e WITH PYTORCH =========================================================
 
-# Problem 2e =============================================================================
-
-def sgd(U,V, batch, batch_size):
-
-            index_map_i = {i : np.where(batch[:, 1] == i)[0] for i in range(num_items)}
-            index_map_j = {j : np.where(batch[:, 0] == j)[0] for j in range(num_users)}
-
-            grad_U = np.zeros(U.shape)
-            grad_V = np.zeros(V.shape)
-
-            for j in range(num_users):
-                if j in index_map_j:
-                    indices = index_map_j[j]
-                    U_j = U[train[indices, 1], :]  # only take u_i who have a corresponding (j, i, R_ij) datapoint with current j
-                    A = lam * np.eye(d) + np.dot(U_j.T, U_j)
-                    b = np.dot(U_j.T, train[indices, 2])
-                    grad_V[j, :] = batch_size / train.shape[0] * (2*np.dot(A, V[j, :]) - 2*b )
-
-
-            # Fix {v_j} and solve for {u_i}
-            for i in range(num_items):
-                if i in index_map_i:
-                    indices = index_map_i[i] #  j values in (j, i, R_ij) with current i
-                    V_i = V[train[indices, 0], :]  # only take the v_j who have a corresponding (j, i, R_ij) datapoint with current i
-                    A = lam * np.eye(d) + np.dot(V_i.T, V_i)
-                    b = np.dot(V_i.T, train[indices, 2])
-                    grad_U[i, :] = batch_size / train.shape[0] * (2*np.dot(A, U[i, :]) - 2*b)
-
-            U = U - eta * grad_U
-            V = V - eta * grad_V
-            return U, V
-
-
+import torch as torch
+import torch.optim as optim
 
 # choose hyperparameters
 lam = 0.001  # lambda; used for regularization
-sigma = 0.1 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
-delta = 0.001  # convergence condition
-batch_size = 100  # minibatch size to use in stochastic gradient descent
-eta = 1  # learning rate for stochastic gradient descent
+sigma = 5 # standard deviation for normal distributions used for initializing {u_i}, {v_j}
+delta = 0.05  # convergence condition
+batch_size = 500  # minibatch size to use in stochastic gradient descent
+eta = 2e-3 # learning rate for stochastic gradient descent
 
+device = torch.device('cpu')
 
-d_vals = [1, 2, 5, 10]#, 20, 50]
+d_vals = [1,2, 5, 10, 20, 50]
+d_vals = [1,2,5,10]
+N = train.shape[0]
 all_train_errors = []
 all_test_errors = []
 
+#torch.random.manual_seed(12345)
+
+def loss_function(U,V, batch, lam):
+    loss = torch.tensor([[0]], dtype=torch.float)
+    for row_num in range(batch.shape[0]):
+        (j, i, R_ij) = batch[row_num, :]
+        u_i = U[i, :]
+        v_j = V[j, :]
+        temp = torch.mm(u_i.view(1, -1), v_j.view(-1, 1))
+        loss += (temp - R_ij).pow(2)
+
+    loss += lam * torch.norm(U, p='fro')
+    loss += lam * torch.norm(V, p='fro')
+    return loss
 
 for d in d_vals:
 
     # Initialize {u_i}, {v_i}. Let U, V be matrices whose rows are u_i, v_i respectively
-    U = sigma * np.random.randn(num_items, d)
-    V = sigma * np.random.randn(num_users, d)
-
-    prev_U = np.copy(U)
-    prev_V = np.copy(V)
+    U = sigma * torch.randn(num_items, d, device=device, dtype=torch.float)
+    U.requires_grad = True
+    V = sigma * torch.randn(num_users, d, device=device, dtype=torch.float)
+    V.requires_grad = True
 
     not_converged = True
     itr = 0
@@ -361,31 +335,32 @@ for d in d_vals:
             data_indices = shuffled_indices[batch_num * batch_size : (batch_num + 1) * batch_size]
             batch = train[data_indices, :]
 
-            U, V = sgd(U=U, V=V, batch=batch, batch_size=batch_size)
+            loss = loss_function(U=U, V=V, batch=batch, lam=lam)
+            #print(loss.item())
+            loss.backward()
 
             # check convergence
-            if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
-                not_converged = False
-                break
-            else:
-                prev_U = np.copy(U)
-                prev_V = np.copy(V)
-        else:
-            # run the remaining samples in the training set
-            batch = train[shuffled_indices[train.shape[0] // n : ]]
-            U,V = sgd(U=U,V=V,batch=batch, batch_size=batch.shape[0])
+            with torch.no_grad():
+                U -= eta * U.grad
+                V -= eta * V.grad
+                if eta * torch.max(torch.abs(U.grad)).item() < delta and eta * torch.max(torch.abs(V.grad)) < delta:
+                    not_converged = False
+                    break
 
-            # check convergence
-            if np.max(np.abs(U - prev_U)) < delta and np.max(np.abs(V - prev_V)) < delta:
-                not_converged = False
-                break
-            else:
-                prev_U = np.copy(U)
-                prev_V = np.copy(V)
+                #p(eta * torch.max(torch.abs(U.grad)).item())
+                #p(eta * torch.max(torch.abs(V.grad)).item())
+                #p(loss_function(U,V, train, lam))
+                #print('hi')
+
+                # zero out the gradients so they dont accummulate for next iteration
+                U.grad.zero_()
+                V.grad.zero_()
 
 
 
-    R_hat = lambda user_index, movie_index: np.inner(U[movie_index, :], V[user_index, :])
+
+
+    R_hat = lambda user_index, movie_index: torch.mm(U[movie_index, :].view(1, -1), V[user_index, :].view(-1, 1)).item()
 
     all_train_errors.append(find_error(train, R_hat))
     all_test_errors.append(find_error(test, R_hat))
@@ -404,6 +379,13 @@ plt.ylabel('Mean Squared Error')
 plt.legend(['Training Error', 'Testing Error'])
 
 plt.show()
+
+
+
+
+
+
+
 
 
 # Problem 2f =============================================================================
