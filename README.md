@@ -82,6 +82,17 @@
 - Probablistic Interpretation of Classification
 
 
+##### Lecture 16/17: Neural Networks
+- feedforward, convolutional, recurrent
+- backpropogation
+- autodifferentiation
+
+##### Lecture 18: Decision Trees, Bagging, and Boosting
+- Decision Trees
+- Bagging (bootstrap aggregation)
+- Random Forests
+- Boosting
+
 
 ### Homework Topics
 
@@ -110,3 +121,9 @@
 - Multivariate Gaussians
 - K-means
 - Bootstrap
+
+##### HW4
+- Expectation Maximization (Mixture Models)
+- Alternating Minimizationg
+- Low rank approximation
+- Pytorch and Autodifferentiation
